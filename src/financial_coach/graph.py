@@ -23,9 +23,23 @@ def build_financial_graph(tabular_rag: TabularRagAgent):
         state["authorized_tables"] = authorized
 
     def retrieve_data(state: CoachState) -> CoachState:
-        bundle = tabular_rag.retrieve(state["user_id"], state["query"], state["authorized_tables"])
+        bundle = tabular_rag.retrieve(
+            state["user_id"],
+            state["query"],
+            state["authorized_tables"],
+            raw_text=state.get("raw_text", ""),
+        )
         state["authorized_tables"] = bundle.tables
         state["retrieval_summary"] = bundle.summaries
+        state["document_hits"] = [
+            {
+                "chunk_id": hit.chunk_id,
+                "score": hit.score,
+                "retrieval_mode": hit.retrieval_mode,
+                "text": hit.text,
+            }
+            for hit in bundle.document_hits
+        ]
         state["audit_log"] = state.get("audit_log", []) + [
             {"step": "tabular_rag", "summary": bundle.summaries}
         ]

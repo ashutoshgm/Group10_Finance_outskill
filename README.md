@@ -7,6 +7,7 @@ Secure, investor-ready MVP for personalized financial coaching using LangGraph m
 - Multi-agent workflow built with LangGraph
 - File ingestion pipeline using PyPDF2, Pandas, and LangChain loaders
 - Schema-aware tabular RAG with minimal authorized row injection
+- Optional hybrid RAG over messy document text using Hugging Face sentence-transformer embeddings with lexical fallback
 - Deterministic debt, savings, and budget calculations in Python
 - Streamlit dashboard with metrics, charts, tables, action plan, and audit trail
 - Architecture, prompts, FGA model, and n8n workflow documentation
@@ -63,6 +64,37 @@ pip install -r requirements.txt
 2. Keep the default `demo-user-001` user or enter another scoped user id.
 3. Run the workflow with built-in sample data or upload `income.csv`, `expenses.csv`, `debts.csv`, and `assets.csv`.
 4. Review the action plan, budget opportunities, authorized tables, and audit trail.
+
+## Hybrid RAG demo
+
+1. Install updated dependencies:
+
+```powershell
+pip install -r requirements.txt
+```
+
+2. Launch the app:
+
+```powershell
+streamlit run app.py
+```
+
+3. Upload a sample set or use the built-in demo data.
+4. In `Analysis request`, ask something that benefits from both structured facts and document evidence, for example:
+   - `Explain the document evidence behind my debt payoff recommendation`
+   - `What lines from my uploaded files support my savings plan?`
+   - `Show the text evidence related to my emergency fund and debt obligations`
+5. Click `Run secure analysis`.
+6. Show two areas in the UI:
+   - `Retrieval Summary` for authorized table retrieval
+   - `Hybrid RAG Document Hits` for chunk-level document-text evidence
+
+### What to say in the demo
+
+- Primary retrieval is still secure tabular RAG over canonical user-scoped tables.
+- Hybrid retrieval adds document chunk search over messy uploaded text.
+- If the embedding model is available, document hits use Hugging Face embeddings.
+- If not, the app falls back safely to lexical chunk matching without breaking the workflow.
 
 ## Extra dummy datasets
 

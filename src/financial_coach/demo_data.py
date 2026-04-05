@@ -63,3 +63,15 @@ def build_demo_tables(user_id: str) -> Dict[str, pd.DataFrame]:
         "debts": debts,
         "assets": assets,
     }
+
+
+def build_demo_raw_text(user_id: str) -> str:
+    return "\n".join(
+        [
+            f"User profile for {user_id}. Salary credited monthly with a recurring freelance side income.",
+            "Expense note: housing, groceries, utilities, transport, dining, streaming, and leisure travel are the main categories.",
+            "Debt note: credit card balance has the highest APR, followed by auto and student loan obligations.",
+            "Asset note: liquid emergency savings are available, while retirement assets are less liquid.",
+            "Advisory objective: balance debt payoff, emergency savings, and budget optimization using user-scoped evidence only.",
+        ]
+    )

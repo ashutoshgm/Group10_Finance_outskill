@@ -117,6 +117,81 @@ class FinancialCoachOrchestrator:
             f"{format_money(recommended_savings, currency_code)} is the current recommended monthly savings allocation."
         )
 
+    @staticmethod
+    def _is_targeted_metric_question(query: str) -> bool:
+        query_lower = query.lower()
+        metric_terms = [
+            "saving",
+            "savings",
+            "debt",
+            "payoff",
+            "budget",
+            "spend",
+            "expense",
+            "income",
+            "cash flow",
+            "emergency",
+            "disposable",
+        ]
+        broader_terms = [
+            "why",
+            "how",
+            "should",
+            "recommend",
+            "compare",
+            "best",
+            "explain",
+            "evidence",
+            "plan",
+            "strategy",
+        ]
+        has_metric = any(term in query_lower for term in metric_terms)
+        has_broader = any(term in query_lower for term in broader_terms)
+        return has_metric and not has_broader
+
+    def answer_chat_question(
+        self,
+        question: str,
+        state: Dict[str, object],
+    ) -> str:
+        cash_flow = state.get("savings_plan", {}).get("cash_flow", {})
+        savings_plan = state.get("savings_plan", {})
+        debt_plan = state.get("debt_plan", {})
+        budget_plan = state.get("budget_plan", {})
+        currency_code = str(state.get("currency_code", "INR"))
+        if self._is_targeted_metric_question(question):
+            return self._build_direct_answer(
+                query=question,
+                cash_flow=cash_flow,
+                savings_plan=savings_plan,
+                debt_plan=debt_plan,
+                budget_plan=budget_plan,
+                currency_code=currency_code,
+            )
+
+        payload = {
+            "user_id": state.get("user_id"),
+            "question": question,
+            "instructions": [
+                "Answer the user's specific question using only the provided analysis state.",
+                "Do not redo financial math beyond the provided deterministic outputs.",
+                "If document hits are available, use them as supporting evidence.",
+                "Keep the answer concise and directly responsive to the question.",
+            ],
+            "context": {
+                "cash_flow": cash_flow,
+                "savings_plan": savings_plan,
+                "debt_plan": debt_plan,
+                "budget_plan": budget_plan,
+                "action_plan": state.get("action_plan", {}),
+                "market_context": state.get("market_context", {}),
+                "document_hits": state.get("document_hits", []),
+                "retrieval_summary": state.get("retrieval_summary", {}),
+                "currency_code": currency_code,
+            },
+        }
+        return self.reasoner.generate_explanation(payload)
+
     def assemble(
         self,
         user_id: str,

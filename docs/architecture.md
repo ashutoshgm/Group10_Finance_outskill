@@ -151,6 +151,13 @@ graph.add_edge("orchestrate", END)
 - Each query is mapped to table-specific retrieval behavior.
 - Only top relevant rows are serialized into downstream context.
 
+### Hybrid RAG extension
+- The same uploaded source text is chunked into document segments.
+- A Hugging Face sentence-transformer model can embed each chunk for semantic retrieval.
+- Top document hits are returned alongside the authorized tabular rows.
+- If embeddings are unavailable at runtime, lexical scoring is used as a safe fallback.
+- Tabular facts remain the source of truth for calculations; document hits provide supporting context only.
+
 ### Data Injection Rules
 - `expenses`: top spending categories for budget questions.
 - `debts`: highest APR ordering for debt payoff requests.

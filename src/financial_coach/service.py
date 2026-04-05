@@ -10,7 +10,7 @@ from financial_coach.auth import OzeroFgaClient, build_demo_policy_store
 from financial_coach.audit import AuditEvent, AuditLogger
 from financial_coach.agents import FinancialCoachOrchestrator
 from financial_coach.currency import detect_currency_code
-from financial_coach.demo_data import build_demo_tables
+from financial_coach.demo_data import build_demo_raw_text, build_demo_tables
 from financial_coach.graph import build_financial_graph
 from financial_coach.ingestion import ingest_structured_files
 from financial_coach.notifications import NotificationDispatcher
@@ -29,11 +29,16 @@ class FinancialCoachService:
         self.audit_logger = AuditLogger()
         self.notifier = NotificationDispatcher()
 
-    def load_tables(self, uploaded_paths: Optional[Iterable[Path]] = None) -> Dict[str, pd.DataFrame]:
+    def load_data_bundle(self, uploaded_paths: Optional[Iterable[Path]] = None) -> Dict[str, object]:
         paths = [Path(path) for path in uploaded_paths or []]
         if paths:
-            return ingest_structured_files(paths, user_id=self.user_id).tables
-        return build_demo_tables(self.user_id)
+            result = ingest_structured_files(paths, user_id=self.user_id)
+            return {"tables": result.tables, "raw_text": result.raw_text}
+        return {"tables": build_demo_tables(self.user_id), "raw_text": build_demo_raw_text(self.user_id)}
+
+    def load_tables(self, uploaded_paths: Optional[Iterable[Path]] = None) -> Dict[str, pd.DataFrame]:
+        bundle = self.load_data_bundle(uploaded_paths)
+        return bundle["tables"]
 
     def run(
         self,
@@ -43,7 +48,9 @@ class FinancialCoachService:
         send_notifications: bool = False,
     ) -> CoachState:
         run_id = str(uuid4())
-        tables = self.load_tables(uploaded_paths)
+        data_bundle = self.load_data_bundle(uploaded_paths)
+        tables = data_bundle["tables"]
+        raw_text = str(data_bundle.get("raw_text", ""))
         self.audit_logger.log_event(
             AuditEvent(
                 event_type="analysis_requested",
@@ -61,6 +68,7 @@ class FinancialCoachService:
             "user_id": self.user_id,
             "query": query,
             "currency_code": detect_currency_code(tables),
+            "raw_text": raw_text,
             "authorized_tables": tables,
             "audit_log": [],
         }
@@ -114,18 +122,11 @@ class FinancialCoachService:
         return result
 
     def answer_question(self, question: str, state: CoachState) -> Dict[str, object]:
-        direct_answer = self.orchestrator._build_direct_answer(
-            query=question,
-            cash_flow=state.get("savings_plan", {}).get("cash_flow", {}),
-            savings_plan=state.get("savings_plan", {}),
-            debt_plan=state.get("debt_plan", {}),
-            budget_plan=state.get("budget_plan", {}),
-            currency_code=state.get("currency_code", "INR"),
-        )
-        moderation = self.orchestrator.moderator.moderate(question, direct_answer)
+        answer = self.orchestrator.answer_chat_question(question, state)
+        moderation = self.orchestrator.moderator.moderate(question, answer)
         return {
             "question": question,
-            "answer": direct_answer,
+            "answer": answer,
             "moderation": moderation,
             "tracing": {
                 "langsmith_enabled": langsmith_enabled(),

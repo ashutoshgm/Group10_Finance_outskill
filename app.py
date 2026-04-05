@@ -90,6 +90,18 @@ def render_chat_history(chat_history: list[dict[str, object]]) -> None:
             st.markdown(str(item["answer"]))
 
 
+def render_document_hits(document_hits: list[dict[str, object]]) -> None:
+    if not document_hits:
+        st.info("No document-text hits were needed for this query.")
+        return
+    for hit in document_hits:
+        with st.expander(
+            f"Chunk {hit['chunk_id']} | score={hit['score']} | mode={hit['retrieval_mode']}",
+            expanded=False,
+        ):
+            st.write(hit["text"])
+
+
 st.title("AI Financial Coach Agent")
 st.caption("Secure multi-agent financial coaching with LangGraph, tabular RAG, deterministic math, and guardrailed advice.")
 
@@ -162,6 +174,9 @@ if state:
 
     st.subheader("Retrieval Summary")
     st.json(state["retrieval_summary"])
+
+    st.subheader("Hybrid RAG Document Hits")
+    render_document_hits(state.get("document_hits", []))
 
     st.subheader("Audit Trail")
     st.dataframe(pd.DataFrame(state["audit_log"]), use_container_width=True)
