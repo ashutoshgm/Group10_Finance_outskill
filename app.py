@@ -28,6 +28,32 @@ st.set_page_config(
 )
 
 
+st.markdown(
+    """
+    <style>
+    .narrative-scrollbox {
+        max-height: 320px;
+        overflow-y: auto;
+        padding: 0.75rem 0.9rem;
+        border: 1px solid rgba(49, 51, 63, 0.2);
+        border-radius: 0.5rem;
+        background-color: rgba(248, 249, 251, 0.85);
+    }
+
+    .narrative-scrollbox pre {
+        margin: 0;
+        white-space: pre-wrap;
+        word-break: break-word;
+        font-family: "Source Code Pro", monospace;
+        font-size: 0.9rem;
+        line-height: 1.45;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
 def save_uploaded_files(uploaded_files) -> list[Path]:
     saved_paths: list[Path] = []
     for uploaded in uploaded_files:
@@ -149,7 +175,14 @@ if state:
         for index, item in enumerate(state["action_plan"]["action_items"], start=1):
             st.markdown(f"{index}. {item}")
         st.subheader("Narrative Explanation")
-        st.code(state["explanation"], language="markdown")
+        st.markdown(
+            f"""
+            <div class="narrative-scrollbox">
+                <pre>{state["explanation"]}</pre>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
     with right:
         st.subheader("Guardrail Status")
