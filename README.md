@@ -5,7 +5,7 @@ Secure, investor-ready MVP for personalized financial coaching using LangGraph m
 ## What is included
 
 - Multi-agent workflow built with LangGraph
-- File ingestion pipeline using PyPDF2, Pandas, and LangChain loaders
+- File ingestion pipeline using PyPDF2, Pandas, and LangChain loaders, with heuristic PDF-to-table extraction
 - Schema-aware tabular RAG with minimal authorized row injection
 - Optional hybrid RAG over messy document text using Hugging Face sentence-transformer embeddings with lexical fallback
 - Deterministic debt, savings, and budget calculations in Python
@@ -63,6 +63,7 @@ pip install -r requirements.txt
 1. Launch Streamlit.
 2. Keep the default `demo-user-001` user or enter another scoped user id.
 3. Run the workflow with built-in sample data or upload `income.csv`, `expenses.csv`, `debts.csv`, and `assets.csv`.
+4. You can also upload `pdf` documents such as statements, summaries, or messy reports. Their text remains available for hybrid retrieval, and recognizable financial lines are mapped into structured tables when possible.
 4. Review the action plan, budget opportunities, authorized tables, and audit trail.
 
 ## Hybrid RAG demo
@@ -79,7 +80,7 @@ pip install -r requirements.txt
 streamlit run app.py
 ```
 
-3. Upload a sample set or use the built-in demo data.
+3. Upload a sample set, a supporting PDF, or use the built-in demo data.
 4. In `Analysis request`, ask something that benefits from both structured facts and document evidence, for example:
    - `Explain the document evidence behind my debt payoff recommendation`
    - `What lines from my uploaded files support my savings plan?`
@@ -93,6 +94,7 @@ streamlit run app.py
 
 - Primary retrieval is still secure tabular RAG over canonical user-scoped tables.
 - Hybrid retrieval adds document chunk search over messy uploaded text.
+- PDF uploads now attempt a conservative schema-aware extraction pass before falling back to text-only use.
 - If the embedding model is available, document hits use Hugging Face embeddings.
 - If not, the app falls back safely to lexical chunk matching without breaking the workflow.
 
