@@ -128,6 +128,38 @@ def render_document_hits(document_hits: list[dict[str, object]]) -> None:
             st.write(hit["text"])
 
 
+def render_ai_technologies() -> None:
+    st.markdown(
+        """
+        ✅ Hugging Face (`LLMs`, embeddings, safety facade)
+
+        ✅ n8n (automation, ingestion, alerts, integrations)
+
+        ✅ LangGraph (multi-agent orchestration)
+
+        ✅ Tabular RAG and Hybrid RAG (data injection from structured files and messy PDFs/CSVs)
+
+        ✅ Ozero FGA (secure fine-grained access control)
+
+        ✅ Streamlit (frontend dashboards)
+
+        ✅ Llama Guard (financial safety guardrails)
+
+        ✅ PyPDF2 and pandas (file ingestion, normalization, analytics)
+
+        ✅ yfinance (live market context with fallback defaults)
+
+        ✅ LangSmith (optional tracing and observability)
+        """
+    )
+
+
+@st.dialog("AI technologies", width="large")
+def show_ai_technologies_dialog() -> None:
+    st.caption("Technologies used across orchestration, ingestion, retrieval, safety, and the UI.")
+    render_ai_technologies()
+
+
 st.title("AI Financial Coach Agent")
 st.caption("Secure multi-agent financial coaching with LangGraph, tabular RAG, deterministic math, and guardrailed advice.")
 
@@ -137,7 +169,6 @@ if "saved_paths" not in st.session_state:
     st.session_state.saved_paths = []
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
-
 with st.sidebar:
     st.header("Session")
     user_id = st.text_input("User ID", value="demo-user-001")
@@ -152,6 +183,8 @@ with st.sidebar:
         accept_multiple_files=True,
     )
     run_analysis = st.button("Run secure analysis", type="primary", use_container_width=True)
+    if st.button("AI technologies", use_container_width=True):
+        show_ai_technologies_dialog()
 
 service = FinancialCoachService(user_id=user_id.strip() or "demo-user-001")
 
