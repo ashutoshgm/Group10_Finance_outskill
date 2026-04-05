@@ -44,12 +44,37 @@ python run_webhooks.py
 docker compose up --build
 ```
 
+## LangSmith tracing
+
+- The app supports optional LangSmith tracing for LangGraph runs.
+- Configure it in [`.env`](/C:/Users/iNNOVATEQ/Documents/New%20project/.env) with:
+  - `LANGSMITH_API_KEY`
+  - `LANGSMITH_TRACING=true`
+  - `LANGSMITH_PROJECT=ai-financial-coach-agent`
+- After updating dependencies, reinstall:
+
+```powershell
+pip install -r requirements.txt
+```
+
 ## Demo flow
 
 1. Launch Streamlit.
 2. Keep the default `demo-user-001` user or enter another scoped user id.
 3. Run the workflow with built-in sample data or upload `income.csv`, `expenses.csv`, `debts.csv`, and `assets.csv`.
 4. Review the action plan, budget opportunities, authorized tables, and audit trail.
+
+## Extra dummy datasets
+
+- [set_1_balanced](/C:/Users/iNNOVATEQ/Documents/New%20project/data/sample/set_1_balanced) with user id `balanced-user-001`
+- [set_2_debt_stressed](/C:/Users/iNNOVATEQ/Documents/New%20project/data/sample/set_2_debt_stressed) with user id `debt-stressed-002`
+- [set_3_high_saver](/C:/Users/iNNOVATEQ/Documents/New%20project/data/sample/set_3_high_saver) with user id `high-saver-003`
+
+To use one of these sets:
+
+1. Enter the matching `User ID` in the sidebar.
+2. Upload the four files from that sample set.
+3. Click `Run secure analysis`.
 
 ## Security model
 

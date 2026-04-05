@@ -15,6 +15,7 @@ from financial_coach.graph import build_financial_graph
 from financial_coach.ingestion import ingest_structured_files
 from financial_coach.notifications import NotificationDispatcher
 from financial_coach.rag import TabularRagAgent
+from financial_coach.tracing import build_langgraph_config, langsmith_enabled, langsmith_project
 from financial_coach.types import CoachState
 
 
@@ -63,7 +64,19 @@ class FinancialCoachService:
             "authorized_tables": tables,
             "audit_log": [],
         }
-        result = self.graph.invoke(initial_state)
+        invoke_config = build_langgraph_config(
+            run_name="financial_coach_analysis",
+            tags=["financial-coach", source, self.user_id],
+            metadata={
+                "user_id": self.user_id,
+                "source": source,
+                "run_id": run_id,
+                "query": query,
+                "langsmith_enabled": langsmith_enabled(),
+                "langsmith_project": langsmith_project(),
+            },
+        )
+        result = self.graph.invoke(initial_state, config=invoke_config)
         result["run_id"] = run_id
         self.audit_logger.log_event(
             AuditEvent(
@@ -114,4 +127,8 @@ class FinancialCoachService:
             "question": question,
             "answer": direct_answer,
             "moderation": moderation,
+            "tracing": {
+                "langsmith_enabled": langsmith_enabled(),
+                "langsmith_project": langsmith_project(),
+            },
         }
